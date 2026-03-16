@@ -37,8 +37,8 @@ export function UsernameInput({ onSubmit }: Props) {
         </div>
 
         {/* Toolbar — icons left, Post button right */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-0">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-0 overflow-x-auto scrollbar-hide shrink min-w-0">
             {/* GIF-like icons row matching screenshot */}
             <button type="button" className="p-2 rounded-full hover:bg-x-blue/10 transition-colors cursor-pointer">
               <ImageIcon className="w-[19px] h-[19px] text-x-blue" />
@@ -55,26 +55,26 @@ export function UsernameInput({ onSubmit }: Props) {
             <button type="button" className="p-2 rounded-full hover:bg-x-blue/10 transition-colors cursor-pointer">
               <Smile className="w-[19px] h-[19px] text-x-blue" />
             </button>
-            <button type="button" className="p-2 rounded-full hover:bg-x-blue/10 transition-colors cursor-pointer">
+            <button type="button" className="p-2 rounded-full hover:bg-x-blue/10 transition-colors cursor-pointer hidden sm:block">
               <Clock className="w-[19px] h-[19px] text-x-blue" />
             </button>
             <button type="button" className="p-2 rounded-full hover:bg-x-blue/10 transition-colors cursor-pointer">
               <MapPin className="w-[19px] h-[19px] text-x-blue" />
             </button>
-            <button type="button" className="p-2 rounded-full hover:bg-x-blue/10 transition-colors cursor-pointer">
+            <button type="button" className="p-2 rounded-full hover:bg-x-blue/10 transition-colors cursor-pointer hidden sm:block">
               <Flag className="w-[19px] h-[19px] text-x-blue" />
             </button>
-            <button type="button" className="p-2 rounded-full hover:bg-x-blue/10 transition-colors cursor-pointer">
+            <button type="button" className="p-2 rounded-full hover:bg-x-blue/10 transition-colors cursor-pointer hidden sm:block">
               <Bold className="w-[19px] h-[19px] text-x-blue" />
             </button>
-            <button type="button" className="p-2 rounded-full hover:bg-x-blue/10 transition-colors cursor-pointer">
+            <button type="button" className="p-2 rounded-full hover:bg-x-blue/10 transition-colors cursor-pointer hidden sm:block">
               <Italic className="w-[19px] h-[19px] text-x-blue" />
             </button>
           </div>
           <button
             type="submit"
             disabled={!value.replace(/^@/, '').trim()}
-            className="px-5 py-1.5 bg-white hover:bg-white/90 disabled:bg-[#787a7a] disabled:text-[#bbb] text-black font-extrabold text-[15px] rounded-full transition-colors cursor-pointer"
+            className="px-5 py-1.5 bg-white hover:bg-white/90 disabled:bg-[#787a7a] disabled:text-[#bbb] text-black font-extrabold text-[15px] rounded-full transition-colors cursor-pointer shrink-0"
           >
             Idify
           </button>

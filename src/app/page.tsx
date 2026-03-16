@@ -2,6 +2,8 @@
 
 import { LeftSidebar } from '@/components/LeftSidebar';
 import { RightSidebar } from '@/components/RightSidebar';
+import { BottomNav } from '@/components/BottomNav';
+import { MobileHeader } from '@/components/MobileHeader';
 import { UsernameInput } from '@/components/UsernameInput';
 import { LoadingState } from '@/components/LoadingState';
 import { ResultsView } from '@/components/ResultsView';
@@ -15,12 +17,18 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-x-bg flex justify-center">
-      <LeftSidebar onHomeClick={reset} analyzedProfile={result?.profile ?? null} />
+      {/* Left sidebar — hidden on mobile */}
+      <div className="hidden lg:block">
+        <LeftSidebar onHomeClick={reset} analyzedProfile={result?.profile ?? null} />
+      </div>
 
-      <main className="w-[605px] min-h-screen border-x border-x-border shrink-0">
-        {/* "For you / Following" tabs — only on timeline views, not profile */}
+      <main className="w-full lg:w-[605px] min-h-screen lg:border-x border-x-border lg:shrink-0 pb-[53px] lg:pb-0">
+        {/* Mobile header — only on mobile, only on timeline views */}
+        {showTimelineTabs && <MobileHeader avatarUrl={result?.profile?.avatar} />}
+
+        {/* Desktop "For you / Following" tabs — hidden on mobile */}
         {showTimelineTabs && (
-          <div className="sticky top-0 z-10 bg-x-bg/80 backdrop-blur-md border-b border-x-border">
+          <div className="sticky top-0 z-10 bg-x-bg/80 backdrop-blur-md border-b border-x-border hidden lg:block">
             <div className="flex">
               <button className="flex-1 py-4 text-center text-[15px] font-bold text-x-text hover:bg-[#181919] transition-colors relative cursor-pointer">
                 For you
@@ -43,7 +51,13 @@ export default function HomePage() {
         )}
       </main>
 
-      <RightSidebar />
+      {/* Right sidebar — hidden on mobile */}
+      <div className="hidden lg:block">
+        <RightSidebar />
+      </div>
+
+      {/* Bottom nav — only on mobile */}
+      <BottomNav onHomeClick={reset} />
     </div>
   );
 }
