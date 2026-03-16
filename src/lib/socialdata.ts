@@ -42,11 +42,11 @@ export async function fetchUserTweets(userId: string): Promise<XTweet[]> {
   console.log('[socialdata] Fetching tweets:', url);
 
   try {
-    // Fetch up to 3 pages (~60 tweets)
+    // Fetch up to 5 pages (~100 tweets)
     let allTweets: XTweet[] = [];
     let cursor: string | undefined;
 
-    for (let page = 0; page < 3; page++) {
+    for (let page = 0; page < 5; page++) {
       const params: Record<string, string> = {};
       if (cursor) params.cursor = cursor;
 
@@ -65,7 +65,7 @@ export async function fetchUserTweets(userId: string): Promise<XTweet[]> {
     if (allTweets.length > 0) {
       console.log('[socialdata] First tweet sample:', allTweets[0].full_text?.substring(0, 100));
     }
-    return allTweets.slice(0, 50);
+    return allTweets.slice(0, 100);
   } catch (error) {
     if (axios.isAxiosError(error)) {
       const status = error.response?.status;
@@ -75,5 +75,22 @@ export async function fetchUserTweets(userId: string): Promise<XTweet[]> {
     }
     console.error('[socialdata] Tweets fetch error:', error);
     throw new Error('Failed to fetch tweets. Please try again.');
+  }
+}
+
+export async function fetchUserHighlights(userId: string): Promise<XTweet[]> {
+  const url = `${API_BASE}/twitter/user/${userId}/highlights`;
+  console.log('[socialdata] Fetching highlights:', url);
+
+  try {
+    const { data, status } = await axios.get(url, { headers: getHeaders() });
+    console.log('[socialdata] Highlights response status:', status);
+    const tweets: XTweet[] = data.tweets || [];
+    console.log('[socialdata] Highlights count:', tweets.length);
+    return tweets;
+  } catch (error) {
+    // Highlights are optional — don't fail the whole flow
+    console.warn('[socialdata] Highlights fetch failed, continuing without them');
+    return [];
   }
 }

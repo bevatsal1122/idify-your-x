@@ -48,14 +48,17 @@ export interface AnalysisResult {
     name: string;
     username: string;
     avatar: string;
+    banner?: string;
     bio: string;
     followers: number;
+    following: number;
     location?: string;
   };
   interests: DetectedInterest[];
   ideas: GeneratedIdea[];
   summary: string;
   analyzedTweetsCount: number;
+  analyzedHighlightsCount: number;
 }
 
 export type AppState = 'idle' | 'loading' | 'results' | 'error';

@@ -1,10 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { Image as ImageIcon, ListOrdered, Smile, MapPin, CalendarDays } from 'lucide-react';
+import { Image as ImageIcon, Smile, MapPin, ListOrdered, Clock, Bold, Italic, Flag } from 'lucide-react';
 import { IdifyAvatar } from './IdifyAvatar';
 
-const EXAMPLES = ['levelsio', 'naval', 'paulg', 'saborman02'];
+const EXAMPLES = ['xvatsall', 'levelsio', 'elonmusk', 'naval'];
 
 interface Props {
   onSubmit: (username: string) => void;
@@ -22,50 +22,62 @@ export function UsernameInput({ onSubmit }: Props) {
   return (
     <div>
       {/* Compose area - looks like X's tweet compose */}
-      <form onSubmit={handleSubmit} className="border-b border-x-border px-4 py-3">
-        <div className="flex gap-3">
-          {/* Avatar */}
+      <form onSubmit={handleSubmit} className="border-b border-x-border px-4 pt-3 pb-2">
+        {/* Avatar + input row */}
+        <div className="flex items-center gap-3 mb-3">
           <IdifyAvatar />
+          <input
+            type="text"
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            placeholder="Enter a username to idify..."
+            className="flex-1 bg-transparent text-[20px] font-medium text-x-text placeholder:text-x-tertiary placeholder:font-medium py-2 outline-none"
+            autoFocus
+          />
+        </div>
 
-          <div className="flex-1 min-w-0">
-            {/* Input */}
-            <input
-              type="text"
-              value={value}
-              onChange={(e) => setValue(e.target.value)}
-              placeholder="Enter a username to idify..."
-              className="w-full bg-transparent text-[20px] text-x-text font-medium placeholder:text-x-tertiary py-2 outline-none"
-              autoFocus
-            />
-
-            {/* Toolbar row */}
-            <div className="flex items-center justify-between mt-2 pt-3 border-t border-x-border">
-              <div className="flex items-center gap-1 -ml-2">
-                <button type="button" className="p-2 rounded-full hover:bg-x-blue/10 transition-colors cursor-pointer">
-                  <ImageIcon className="w-[18px] h-[18px] text-x-blue" />
-                </button>
-                <button type="button" className="p-2 rounded-full hover:bg-x-blue/10 transition-colors cursor-pointer">
-                  <ListOrdered className="w-[18px] h-[18px] text-x-blue" />
-                </button>
-                <button type="button" className="p-2 rounded-full hover:bg-x-blue/10 transition-colors cursor-pointer">
-                  <Smile className="w-[18px] h-[18px] text-x-blue" />
-                </button>
-                <button type="button" className="p-2 rounded-full hover:bg-x-blue/10 transition-colors cursor-pointer">
-                  <CalendarDays className="w-[18px] h-[18px] text-x-blue" />
-                </button>
-                <button type="button" className="p-2 rounded-full hover:bg-x-blue/10 transition-colors cursor-pointer">
-                  <MapPin className="w-[18px] h-[18px] text-x-blue" />
-                </button>
-              </div>
-              <button
-                type="submit"
-                disabled={!value.replace(/^@/, '').trim()}
-                className="px-5 py-1.5 bg-x-blue hover:bg-x-blue-hover disabled:opacity-50 text-white font-bold text-[15px] rounded-full transition-colors cursor-pointer"
-              >
-                Idify
-              </button>
-            </div>
+        {/* Toolbar — icons left, Post button right */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-0">
+            {/* GIF-like icons row matching screenshot */}
+            <button type="button" className="p-2 rounded-full hover:bg-x-blue/10 transition-colors cursor-pointer">
+              <ImageIcon className="w-[19px] h-[19px] text-x-blue" />
+            </button>
+            <button type="button" className="p-2 rounded-full hover:bg-x-blue/10 transition-colors cursor-pointer">
+              <svg viewBox="0 0 24 24" className="w-[19px] h-[19px] fill-x-blue"><path d="M3 5.5C3 4.119 4.12 3 5.5 3h13C19.88 3 21 4.119 21 5.5v13c0 1.381-1.12 2.5-2.5 2.5h-13C4.12 21 3 19.881 3 18.5v-13zM5.5 5c-.276 0-.5.224-.5.5v13c0 .276.224.5.5.5h13c.276 0 .5-.224.5-.5v-13c0-.276-.224-.5-.5-.5h-13zM18 10.711V9.25h-3.74v5.5h1.44v-1.719h1.7V11.57h-1.7v-.859H18zM11.79 9.25h1.44v5.5h-1.44v-5.5zm-3.07 1.375c.34 0 .77.172.77.59v.03h1.44v-.09c0-1.184-1.05-1.9-2.17-1.9-1.14 0-2.2.69-2.2 2.08v1.37c0 1.39 1.06 2.08 2.2 2.08 1.13 0 2.17-.72 2.17-1.9v-.09H9.49v.03c0 .418-.43.59-.77.59-.48 0-.78-.29-.78-.78v-1.27c0-.49.3-.74.78-.74z" /></svg>
+            </button>
+            <button type="button" className="p-2 rounded-full hover:bg-x-blue/10 transition-colors cursor-pointer">
+              <svg viewBox="0 0 24 24" className="w-[19px] h-[19px] fill-x-blue"><path d="M3 5.5C3 4.119 4.119 3 5.5 3h13C19.881 3 21 4.119 21 5.5v13c0 1.381-1.119 2.5-2.5 2.5h-13C4.119 21 3 19.881 3 18.5v-13zM5.5 5c-.276 0-.5.224-.5.5v9.086l3-3 3 3 5-5 3 3V5.5c0-.276-.224-.5-.5-.5h-13zM19 15.414l-3-3-5 5-3-3-3 3V18.5c0 .276.224.5.5.5h13c.276 0 .5-.224.5-.5v-3.086zM9.75 7C8.784 7 8 7.784 8 8.75s.784 1.75 1.75 1.75 1.75-.784 1.75-1.75S10.716 7 9.75 7z" /></svg>
+            </button>
+            <button type="button" className="p-2 rounded-full hover:bg-x-blue/10 transition-colors cursor-pointer">
+              <ListOrdered className="w-[19px] h-[19px] text-x-blue" />
+            </button>
+            <button type="button" className="p-2 rounded-full hover:bg-x-blue/10 transition-colors cursor-pointer">
+              <Smile className="w-[19px] h-[19px] text-x-blue" />
+            </button>
+            <button type="button" className="p-2 rounded-full hover:bg-x-blue/10 transition-colors cursor-pointer">
+              <Clock className="w-[19px] h-[19px] text-x-blue" />
+            </button>
+            <button type="button" className="p-2 rounded-full hover:bg-x-blue/10 transition-colors cursor-pointer">
+              <MapPin className="w-[19px] h-[19px] text-x-blue" />
+            </button>
+            <button type="button" className="p-2 rounded-full hover:bg-x-blue/10 transition-colors cursor-pointer">
+              <Flag className="w-[19px] h-[19px] text-x-blue" />
+            </button>
+            <button type="button" className="p-2 rounded-full hover:bg-x-blue/10 transition-colors cursor-pointer">
+              <Bold className="w-[19px] h-[19px] text-x-blue" />
+            </button>
+            <button type="button" className="p-2 rounded-full hover:bg-x-blue/10 transition-colors cursor-pointer">
+              <Italic className="w-[19px] h-[19px] text-x-blue" />
+            </button>
           </div>
+          <button
+            type="submit"
+            disabled={!value.replace(/^@/, '').trim()}
+            className="px-5 py-1.5 bg-white hover:bg-white/90 disabled:bg-[#787a7a] disabled:text-[#bbb] text-black font-extrabold text-[15px] rounded-full transition-colors cursor-pointer"
+          >
+            Idify
+          </button>
         </div>
       </form>
 

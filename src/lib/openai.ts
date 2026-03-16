@@ -50,13 +50,23 @@ Be specific, creative, and practical. Ideas should be things this person could r
 export async function analyzeProfile(
   profile: XUserProfile,
   tweets: XTweet[],
+  highlightsCount: number = 0,
 ): Promise<AnalysisResult> {
   console.log('[openai] Starting analysis for @' + profile.screen_name);
   const client = getClient();
 
+  // Mark highlights (they come first in the merged array)
   const tweetTexts = tweets
-    .map((t, i) => `Tweet ${i + 1} [${t.favorite_count} likes, ${t.retweet_count} RTs]: ${t.full_text}`)
+    .map((t, i) => {
+      const isHighlight = i < highlightsCount;
+      const prefix = isHighlight ? '[HIGHLIGHT] ' : '';
+      return `${prefix}Tweet ${i + 1} [${t.favorite_count} likes, ${t.retweet_count} RTs]: ${t.full_text}`;
+    })
     .join('\n\n');
+
+  const highlightNote = highlightsCount > 0
+    ? `\n\nNote: ${highlightsCount} tweets are marked [HIGHLIGHT] — these are tweets the user chose to highlight on their profile, meaning they consider them especially important or representative of who they are. Weigh these more heavily in your analysis.`
+    : '';
 
   const userMessage = `Analyze this X/Twitter profile:
 
@@ -70,9 +80,9 @@ export async function analyzeProfile(
 
 ---
 
-**Recent Tweets (${tweets.length} tweets):**
+**Tweets analyzed (${tweets.length} total${highlightsCount > 0 ? `, including ${highlightsCount} highlights` : ''}):**
 
-${tweetTexts || 'No recent tweets available.'}`;
+${tweetTexts || 'No recent tweets available.'}${highlightNote}`;
 
   console.log('[openai] User message length:', userMessage.length, 'chars');
   console.log('[openai] Calling GPT-4o...');
@@ -105,13 +115,16 @@ ${tweetTexts || 'No recent tweets available.'}`;
       name: profile.name,
       username: profile.screen_name,
       avatar: profile.profile_image_url_https?.replace('_normal', '_400x400') || '',
+      banner: profile.profile_banner_url || undefined,
       bio: profile.description || '',
       followers: profile.followers_count,
+      following: profile.friends_count,
       location: profile.location,
     },
     interests: parsed.interests || [],
     ideas: parsed.ideas || [],
     summary: parsed.summary || '',
     analyzedTweetsCount: tweets.length,
+    analyzedHighlightsCount: highlightsCount,
   };
 }

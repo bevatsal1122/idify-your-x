@@ -18,6 +18,8 @@ export function ResultsView({ result, onReset }: Props) {
         profile={result.profile}
         summary={result.summary}
         analyzedTweetsCount={result.analyzedTweetsCount}
+        analyzedHighlightsCount={result.analyzedHighlightsCount}
+        onBack={onReset}
       />
 
       <InterestTags interests={result.interests} />

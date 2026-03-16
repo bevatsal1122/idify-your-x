@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { fetchUserProfile, fetchUserTweets } from '@/lib/socialdata';
+import { fetchUserProfile, fetchUserTweets, fetchUserHighlights } from '@/lib/socialdata';
 import { analyzeProfile } from '@/lib/openai';
 
 export const dynamic = 'force-dynamic';
@@ -30,12 +30,24 @@ export async function POST(request: NextRequest) {
     const profile = await fetchUserProfile(cleanUsername);
     console.log('[analyze] Profile fetched:', profile.name, '(@' + profile.screen_name + ')', 'id:', profile.id_str);
 
-    console.log('[analyze] Step 2: Fetching tweets...');
-    const tweets = await fetchUserTweets(profile.id_str);
-    console.log('[analyze] Tweets fetched:', tweets.length, 'tweets');
+    console.log('[analyze] Step 2: Fetching tweets + highlights in parallel...');
+    const [tweets, highlights] = await Promise.all([
+      fetchUserTweets(profile.id_str),
+      fetchUserHighlights(profile.id_str),
+    ]);
+    console.log('[analyze] Tweets fetched:', tweets.length, '| Highlights fetched:', highlights.length);
+
+    // Merge: highlights first (higher signal), then tweets, deduplicated
+    const seenIds = new Set<string>();
+    const allTweets = [...highlights, ...tweets].filter((t) => {
+      if (seenIds.has(t.id_str)) return false;
+      seenIds.add(t.id_str);
+      return true;
+    });
+    console.log('[analyze] Merged unique tweets:', allTweets.length);
 
     console.log('[analyze] Step 3: Analyzing with OpenAI...');
-    const analysis = await analyzeProfile(profile, tweets);
+    const analysis = await analyzeProfile(profile, allTweets, highlights.length);
     console.log('[analyze] Analysis complete:', analysis.interests.length, 'interests,', analysis.ideas.length, 'ideas');
 
     return NextResponse.json(analysis);
