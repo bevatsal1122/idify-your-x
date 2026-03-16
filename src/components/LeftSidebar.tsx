@@ -15,14 +15,14 @@ import {
 } from 'lucide-react';
 
 const NAV_ITEMS = [
-  { icon: Home, label: 'Home' },
-  { icon: Search, label: 'Explore' },
-  { icon: Bell, label: 'Notifications' },
-  { icon: Mail, label: 'Chat' },
-  { icon: Sparkles, label: 'Grok' },
-  { icon: Crown, label: 'Premium' },
-  { icon: User, label: 'Profile' },
-  { icon: MoreHorizontal, label: 'More' },
+  { icon: Home, label: 'Home', action: 'home' },
+  { icon: Search, label: 'Explore', action: null },
+  { icon: Bell, label: 'Notifications', action: 'notif' },
+  { icon: Mail, label: 'Chat', action: null },
+  { icon: Sparkles, label: 'Grok', action: null },
+  { icon: Crown, label: 'Premium', action: null },
+  { icon: User, label: 'Profile', action: null },
+  { icon: MoreHorizontal, label: 'More', action: null },
 ];
 
 const IDENTITIES = [
@@ -54,7 +54,11 @@ const NOTIF_STAGES = [
   '', '1', '3', '9', '27', '99+', '420', '1K', '69K', '∞', '💀', '🔥', 'HELP', '😱',
 ];
 
-export function LeftSidebar() {
+interface SidebarProps {
+  onHomeClick?: () => void;
+}
+
+export function LeftSidebar({ onHomeClick }: SidebarProps) {
   const [identityIndex, setIdentityIndex] = useState(0);
   const [identityShake, setIdentityShake] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
@@ -144,8 +148,12 @@ export function LeftSidebar() {
             return (
               <button
                 key={item.label}
-                onClick={isNotif ? handleNotifClick : undefined}
-                className="flex items-center gap-5 px-3 py-3 rounded-full hover:bg-[#181919] transition-colors group cursor-pointer relative"
+                onClick={
+                  item.action === 'notif' ? handleNotifClick :
+                  item.action === 'home' ? onHomeClick :
+                  undefined
+                }
+                className="inline-flex items-center gap-5 px-3 py-3 rounded-full hover:bg-[#181919] transition-colors group cursor-pointer relative w-auto"
               >
                 <div
                   className="relative"
@@ -160,7 +168,7 @@ export function LeftSidebar() {
                     </span>
                   )}
                 </div>
-                <span className="text-[20px] font-bold text-x-text hidden xl:inline">{item.label}</span>
+                <span className="text-[20px] font-medium text-x-text hidden xl:inline">{item.label}</span>
               </button>
             );
           })}
@@ -169,7 +177,7 @@ export function LeftSidebar() {
         {/* Post Button — shows funny toast */}
         <button
           onClick={handlePost}
-          className="mt-4 mx-3 py-3 bg-white hover:bg-white/90 text-black font-extrabold text-[17px] rounded-full transition-colors hidden xl:block cursor-pointer active:scale-95"
+          className="mt-4 mx-3 py-3 bg-white hover:bg-white/90 text-black font-bold text-[17px] rounded-full transition-colors hidden xl:block cursor-pointer active:scale-95"
         >
           Post
         </button>

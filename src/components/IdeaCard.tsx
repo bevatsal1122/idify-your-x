@@ -39,10 +39,10 @@ export function IdeaCard({ idea, index }: Props) {
           </div>
 
           {/* Description */}
-          <p className="text-[15px] text-x-text leading-5 mt-1">{idea.description}</p>
+          <p className="text-[15px] font-medium text-x-text leading-5 mt-1">{idea.description}</p>
 
           {/* Why you - styled as quote */}
-          <p className="text-[15px] text-x-secondary leading-5 mt-2">
+          <p className="text-[15px] font-medium text-x-secondary leading-5 mt-2">
             <span className="text-x-text font-bold">Why you: </span>
             {idea.reasoning}
           </p>

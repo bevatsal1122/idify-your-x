@@ -13,7 +13,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-x-bg flex justify-center">
-      <LeftSidebar />
+      <LeftSidebar onHomeClick={reset} />
 
       <main className="w-[600px] min-h-screen border-x border-x-border shrink-0">
         {/* Header tabs like X */}

@@ -34,7 +34,7 @@ export function UsernameInput({ onSubmit }: Props) {
               value={value}
               onChange={(e) => setValue(e.target.value)}
               placeholder="Enter a username to idify..."
-              className="w-full bg-transparent text-[20px] text-x-text font-normal placeholder:text-x-tertiary py-2 outline-none"
+              className="w-full bg-transparent text-[20px] text-x-text font-medium placeholder:text-x-tertiary py-2 outline-none"
               autoFocus
             />
 
@@ -131,7 +131,7 @@ export function UsernameInput({ onSubmit }: Props) {
                 <span className="text-[15px] text-x-secondary">·</span>
                 <span className="text-[15px] text-x-secondary">{tweet.time}</span>
               </div>
-              <p className="text-[15px] text-x-text leading-5 mt-0.5 whitespace-pre-line">{tweet.text}</p>
+              <p className="text-[15px] font-medium text-x-text leading-5 mt-0.5 whitespace-pre-line">{tweet.text}</p>
               <div className="flex items-center justify-between mt-3 max-w-[425px] text-x-secondary">
                 <span className="flex items-center gap-1 text-[13px] hover:text-x-blue transition-colors cursor-pointer">
                   <svg viewBox="0 0 24 24" className="w-[18px] h-[18px] fill-current"><path d="M1.751 10c0-4.42 3.584-8 8.005-8h4.366c4.49 0 8.129 3.64 8.129 8.13 0 2.25-.893 4.306-2.394 5.862l-5.091 5.28c-.33.34-.872.34-1.202.003l-5.11-5.285A8.15 8.15 0 011.751 10zm8.005-6c-3.317 0-6.005 2.69-6.005 6 0 1.665.662 3.258 1.838 4.433l4.412 4.56 4.382-4.555C15.542 13.29 16.2 11.702 16.2 10.13 16.2 6.894 13.607 4 10.122 4H9.756z" /></svg>
