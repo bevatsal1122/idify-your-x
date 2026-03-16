@@ -31,7 +31,7 @@ export function UsernameInput({ onSubmit }: Props) {
             value={value}
             onChange={(e) => setValue(e.target.value)}
             placeholder="Enter a username to idify..."
-            className="flex-1 bg-transparent text-[20px] font-medium text-x-text placeholder:text-x-tertiary placeholder:font-medium py-2 outline-none"
+            className="flex-1 bg-transparent text-[20px] font-semibold text-x-text placeholder:text-x-tertiary placeholder:font-semibold py-2 outline-none"
             autoFocus
           />
         </div>
@@ -92,7 +92,7 @@ export function UsernameInput({ onSubmit }: Props) {
                 setValue(name);
                 onSubmit(name);
               }}
-              className="px-4 py-2 border border-x-border rounded-full text-[15px] text-x-blue hover:bg-x-blue/10 transition-colors cursor-pointer"
+              className="px-4 py-2 border border-x-border rounded-full text-[15px] font-medium text-x-blue hover:bg-x-blue/10 transition-colors cursor-pointer"
             >
               @{name}
             </button>
