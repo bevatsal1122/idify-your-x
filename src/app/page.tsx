@@ -47,7 +47,7 @@ export default function HomePage() {
           <ResultsView result={result} onReset={reset} />
         )}
         {state === 'error' && error && (
-          <ErrorState error={error} onRetry={() => analyze(username)} onReset={reset} />
+          <ErrorState error={error} onRetry={reset} onReset={reset} />
         )}
       </main>
 

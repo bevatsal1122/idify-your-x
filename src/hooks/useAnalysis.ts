@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import type { AnalysisResult, AppState, AnalysisError } from '@/types';
 
 export function useAnalysis() {
@@ -8,8 +8,10 @@ export function useAnalysis() {
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [error, setError] = useState<AnalysisError | null>(null);
   const [username, setUsername] = useState('');
+  const lastTurnstileToken = useRef<string | undefined>(undefined);
 
-  const analyze = useCallback(async (inputUsername: string) => {
+  const analyze = useCallback(async (inputUsername: string, turnstileToken?: string) => {
+    if (turnstileToken) lastTurnstileToken.current = turnstileToken;
     setState('loading');
     setError(null);
     setResult(null);
@@ -19,7 +21,7 @@ export function useAnalysis() {
       const res = await fetch('/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: inputUsername }),
+        body: JSON.stringify({ username: inputUsername, turnstileToken: turnstileToken ?? lastTurnstileToken.current }),
       });
 
       const data = await res.json();
@@ -43,6 +45,7 @@ export function useAnalysis() {
     setResult(null);
     setError(null);
     setUsername('');
+    lastTurnstileToken.current = undefined;
   }, []);
 
   return { state, result, error, username, analyze, reset };

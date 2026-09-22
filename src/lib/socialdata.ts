@@ -2,11 +2,17 @@ import axios from 'axios';
 import type { XUserProfile, XTweet } from '@/types';
 
 const API_BASE = 'https://api.socialdata.tools';
+const MAX_TWEETS = 50;
+const REQUEST_OPTIONS = {
+  timeout: 10_000,
+  maxRedirects: 0,
+  maxContentLength: 1_000_000,
+  maxBodyLength: 1_000_000,
+};
 
 function getHeaders() {
   const key = process.env.SOCIALDATA_API_KEY;
   if (!key) throw new Error('SOCIALDATA_API_KEY environment variable is not set');
-  console.log('[socialdata] API key present, length:', key.length);
   return {
     Authorization: `Bearer ${key}`,
     Accept: 'application/json',
@@ -15,82 +21,57 @@ function getHeaders() {
 
 export async function fetchUserProfile(username: string): Promise<XUserProfile> {
   const url = `${API_BASE}/twitter/user/${username}`;
-  console.log('[socialdata] Fetching profile:', url);
-
   try {
-    const { data, status } = await axios.get(url, { headers: getHeaders() });
-    console.log('[socialdata] Profile response status:', status);
-    console.log('[socialdata] Profile data keys:', Object.keys(data));
-    console.log('[socialdata] Profile id_str:', data.id_str, 'screen_name:', data.screen_name);
+    const { data } = await axios.get(url, { headers: getHeaders(), ...REQUEST_OPTIONS });
     return data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
       const status = error.response?.status;
-      console.error('[socialdata] Profile fetch error, status:', status);
-      console.error('[socialdata] Response data:', JSON.stringify(error.response?.data));
       if (status === 404) throw new Error('User not found. Check the username and try again.');
       if (status === 401) throw new Error('API authentication error. Check your SocialData API key.');
       if (status === 429) throw new Error('Rate limit exceeded. Please try again in a moment.');
     }
-    console.error('[socialdata] Profile fetch error:', error);
     throw new Error('Failed to fetch X profile. Please try again.');
   }
 }
 
 export async function fetchUserTweets(userId: string): Promise<XTweet[]> {
   const url = `${API_BASE}/twitter/user/${userId}/tweets`;
-  console.log('[socialdata] Fetching tweets:', url);
-
   try {
-    // Fetch up to 5 pages (~100 tweets)
+    // Fetch only the pages needed for the 50 most recent tweets.
     let allTweets: XTweet[] = [];
     let cursor: string | undefined;
 
-    for (let page = 0; page < 5; page++) {
+    for (let page = 0; page < 3 && allTweets.length < MAX_TWEETS; page++) {
       const params: Record<string, string> = {};
       if (cursor) params.cursor = cursor;
 
-      const { data, status } = await axios.get(url, { headers: getHeaders(), params });
-      console.log('[socialdata] Tweets page', page + 1, 'status:', status);
-      console.log('[socialdata] Tweets data keys:', Object.keys(data));
+      const { data } = await axios.get(url, { headers: getHeaders(), params, ...REQUEST_OPTIONS });
 
       const tweets: XTweet[] = data.tweets || [];
       allTweets = allTweets.concat(tweets);
-      console.log('[socialdata] Page tweets:', tweets.length, 'total so far:', allTweets.length);
-
       cursor = data.next_cursor;
       if (!cursor || tweets.length === 0) break;
     }
 
-    if (allTweets.length > 0) {
-      console.log('[socialdata] First tweet sample:', allTweets[0].full_text?.substring(0, 100));
-    }
-    return allTweets.slice(0, 100);
+    return allTweets.slice(0, MAX_TWEETS);
   } catch (error) {
     if (axios.isAxiosError(error)) {
       const status = error.response?.status;
-      console.error('[socialdata] Tweets fetch error, status:', status);
-      console.error('[socialdata] Response data:', JSON.stringify(error.response?.data));
       if (status === 429) throw new Error('Rate limit exceeded. Please try again in a moment.');
     }
-    console.error('[socialdata] Tweets fetch error:', error);
     throw new Error('Failed to fetch tweets. Please try again.');
   }
 }
 
 export async function fetchUserHighlights(userId: string): Promise<XTweet[]> {
   const url = `${API_BASE}/twitter/user/${userId}/highlights`;
-  console.log('[socialdata] Fetching highlights:', url);
-
   try {
-    const { data, status } = await axios.get(url, { headers: getHeaders() });
-    console.log('[socialdata] Highlights response status:', status);
+    const { data } = await axios.get(url, { headers: getHeaders(), ...REQUEST_OPTIONS });
     const tweets: XTweet[] = data.tweets || [];
-    console.log('[socialdata] Highlights count:', tweets.length);
     return tweets;
   } catch (error) {
     // Highlights are optional — don't fail the whole flow
-    console.warn('[socialdata] Highlights fetch failed, continuing without them');
     return [];
   }
 }

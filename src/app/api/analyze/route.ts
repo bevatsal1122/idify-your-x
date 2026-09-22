@@ -1,42 +1,57 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { fetchUserProfile, fetchUserTweets, fetchUserHighlights } from '@/lib/socialdata';
 import { analyzeProfile } from '@/lib/openai';
+import { getClientIp, takeRateLimit, verifyTurnstile } from '@/lib/security';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
+export const runtime = 'nodejs';
+
+const MAX_BODY_BYTES = 1_024;
+const GENERIC_ERROR = 'We could not analyze that profile right now. Please try again.';
 
 export async function POST(request: NextRequest) {
-  console.log('[analyze] POST request received');
+  const contentLength = Number(request.headers.get('content-length') ?? 0);
+  if (!Number.isFinite(contentLength) || contentLength > MAX_BODY_BYTES) {
+    return NextResponse.json({ error: 'Request is too large' }, { status: 413 });
+  }
+
+  const ip = getClientIp(request);
+  const limit = takeRateLimit(ip);
+  if (!limit.allowed) {
+    return NextResponse.json(
+      { error: 'Too many analyses. Please try again later.' },
+      { status: 429, headers: { 'Retry-After': String(limit.retryAfterSeconds), 'Cache-Control': 'no-store' } },
+    );
+  }
 
   try {
     const body = await request.json();
-    const { username } = body;
-    console.log('[analyze] Username:', username);
+    const { username, turnstileToken } = body ?? {};
 
     if (!username || typeof username !== 'string') {
-      console.log('[analyze] ERROR: Missing username');
       return NextResponse.json({ error: 'Username is required' }, { status: 400 });
     }
 
     const cleanUsername = username.replace(/^@/, '').trim();
-    console.log('[analyze] Clean username:', cleanUsername);
 
     if (!/^[a-zA-Z0-9_]{1,15}$/.test(cleanUsername)) {
-      console.log('[analyze] ERROR: Invalid username format');
       return NextResponse.json({ error: 'Invalid X/Twitter username format' }, { status: 400 });
     }
 
-    console.log('[analyze] Step 1: Fetching profile...');
-    const profile = await fetchUserProfile(cleanUsername);
-    console.log('[analyze] Profile fetched:', profile.name, '(@' + profile.screen_name + ')', 'id:', profile.id_str);
+    if (!(await verifyTurnstile(turnstileToken, ip))) {
+      return NextResponse.json(
+        { error: 'Verification is required before analyzing a profile.' },
+        { status: 403, headers: { 'Cache-Control': 'no-store' } },
+      );
+    }
 
-    console.log('[analyze] Step 2: Fetching tweets + highlights in parallel...');
+    const profile = await fetchUserProfile(cleanUsername);
+
     const [tweets, highlights] = await Promise.all([
       fetchUserTweets(profile.id_str),
       fetchUserHighlights(profile.id_str),
     ]);
-    console.log('[analyze] Tweets fetched:', tweets.length, '| Highlights fetched:', highlights.length);
-
     // Merge: highlights first (higher signal), then tweets, deduplicated
     const seenIds = new Set<string>();
     const allTweets = [...highlights, ...tweets].filter((t) => {
@@ -44,16 +59,14 @@ export async function POST(request: NextRequest) {
       seenIds.add(t.id_str);
       return true;
     });
-    console.log('[analyze] Merged unique tweets:', allTweets.length);
-
-    console.log('[analyze] Step 3: Analyzing with OpenAI...');
     const analysis = await analyzeProfile(profile, allTweets, highlights.length);
-    console.log('[analyze] Analysis complete:', analysis.interests.length, 'interests,', analysis.ideas.length, 'ideas');
 
-    return NextResponse.json(analysis);
+    return NextResponse.json(analysis, { headers: { 'Cache-Control': 'no-store' } });
   } catch (error) {
-    console.error('[analyze] ERROR:', error);
-    const message = error instanceof Error ? error.message : 'Analysis failed';
-    return NextResponse.json({ error: message }, { status: 500 });
+    // Keep provider responses, prompt contents, and stack traces out of logs and clients.
+    if (error instanceof SyntaxError) {
+      return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+    }
+    return NextResponse.json({ error: GENERIC_ERROR }, { status: 500, headers: { 'Cache-Control': 'no-store' } });
   }
 }

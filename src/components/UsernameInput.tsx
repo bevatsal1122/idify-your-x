@@ -1,22 +1,67 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Image as ImageIcon, Smile, MapPin, ListOrdered, Clock, Bold, Italic, Flag } from 'lucide-react';
 import { IdifyAvatar } from './IdifyAvatar';
 
-const EXAMPLES = ['xvatsall', 'levelsio', 'elonmusk', 'naval'];
+const EXAMPLES = ['corevats', 'levelsio', 'elonmusk', 'naval'];
 
 interface Props {
-  onSubmit: (username: string) => void;
+  onSubmit: (username: string, turnstileToken?: string) => void;
+}
+
+declare global {
+  interface Window {
+    turnstile?: {
+      render: (element: HTMLElement, options: {
+        sitekey: string;
+        callback: (token: string) => void;
+        'expired-callback': () => void;
+        'error-callback': () => void;
+      }) => string;
+      remove: (widgetId: string) => void;
+    };
+  }
 }
 
 export function UsernameInput({ onSubmit }: Props) {
   const [value, setValue] = useState('');
+  const [turnstileToken, setTurnstileToken] = useState<string>();
+  const [verificationError, setVerificationError] = useState(false);
+  const turnstileContainer = useRef<HTMLDivElement>(null);
+  const widgetId = useRef<string | undefined>(undefined);
+  const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+
+  useEffect(() => {
+    if (!siteKey || !turnstileContainer.current) return;
+    const render = () => {
+      if (!window.turnstile || !turnstileContainer.current || widgetId.current) return;
+      widgetId.current = window.turnstile.render(turnstileContainer.current, {
+        sitekey: siteKey,
+        callback: (token) => { setTurnstileToken(token); setVerificationError(false); },
+        'expired-callback': () => setTurnstileToken(undefined),
+        'error-callback': () => setVerificationError(true),
+      });
+    };
+    const existing = document.querySelector<HTMLScriptElement>('script[src^="https://challenges.cloudflare.com/turnstile/"]');
+    if (existing) {
+      existing.addEventListener('load', render);
+      render();
+      return () => existing.removeEventListener('load', render);
+    }
+    const script = document.createElement('script');
+    script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+    script.async = true;
+    script.defer = true;
+    script.addEventListener('load', render);
+    document.head.appendChild(script);
+    return () => script.removeEventListener('load', render);
+  }, [siteKey]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const clean = value.replace(/^@/, '').trim();
-    if (clean) onSubmit(clean);
+    if (clean && (!siteKey || turnstileToken)) onSubmit(clean, turnstileToken);
   };
 
   return (
@@ -73,12 +118,14 @@ export function UsernameInput({ onSubmit }: Props) {
           </div>
           <button
             type="submit"
-            disabled={!value.replace(/^@/, '').trim()}
+            disabled={!value.replace(/^@/, '').trim() || Boolean(siteKey && !turnstileToken)}
             className="px-5 py-1.5 bg-white hover:bg-white/90 disabled:bg-[#787a7a] disabled:text-[#bbb] text-black font-extrabold text-[15px] rounded-full transition-colors cursor-pointer shrink-0"
           >
             Idify
           </button>
         </div>
+        {siteKey && <div ref={turnstileContainer} className="mt-2" />}
+        {verificationError && <p className="text-sm text-x-red mt-2">Verification could not load. Please refresh and try again.</p>}
       </form>
 
       {/* Example profiles styled as tweets */}
@@ -90,8 +137,9 @@ export function UsernameInput({ onSubmit }: Props) {
               key={name}
               onClick={() => {
                 setValue(name);
-                onSubmit(name);
+                if (!siteKey || turnstileToken) onSubmit(name, turnstileToken);
               }}
+              disabled={Boolean(siteKey && !turnstileToken)}
               className="px-4 py-2 border border-x-border rounded-full text-[15px] font-medium text-x-blue hover:bg-x-blue/10 transition-colors cursor-pointer"
             >
               @{name}

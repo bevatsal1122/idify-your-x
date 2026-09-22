@@ -208,13 +208,11 @@ export function RightSidebar() {
             <span className="hover:underline cursor-pointer">Ads info</span>
             {' | '}
             <span className="hover:underline cursor-pointer">More ...</span>
-            {' | '}
-            <span>&copy; 2026 X Corp.</span>
           </p>
           <p className="text-[13px] text-x-tertiary mt-2 leading-5">
             Built by{' '}
-            <a href="https://x.com/xvatsall" target="_blank" rel="noopener noreferrer" className="text-x-blue hover:underline">
-              @xvatsall
+            <a href="https://x.com/corevats" target="_blank" rel="noopener noreferrer" className="text-x-blue hover:underline">
+              @corevats
             </a>
           </p>
         </div>
