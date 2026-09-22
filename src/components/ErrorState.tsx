@@ -10,12 +10,16 @@ interface Props {
 }
 
 export function ErrorState({ error, onRetry, onReset }: Props) {
+  const isRateLimited = error.code === 'rate_limited';
+
   return (
     <div className="flex flex-col items-center justify-center py-20 px-4 animate-fade-in">
       <div className="w-14 h-14 rounded-full bg-x-red/10 flex items-center justify-center mb-4">
         <AlertCircle className="w-7 h-7 text-x-red" />
       </div>
-      <p className="text-[20px] font-bold text-x-text mb-1">Something went wrong</p>
+      <p className="text-[20px] font-bold text-x-text mb-1">
+        {isRateLimited ? 'Too many requests' : 'Something went wrong'}
+      </p>
       <p className="text-[15px] text-x-secondary mb-6 text-center max-w-sm">{error.message}</p>
       <div className="flex items-center gap-3">
         <button

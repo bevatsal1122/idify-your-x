@@ -3,6 +3,19 @@
 import { useState, useCallback, useRef } from 'react';
 import type { AnalysisResult, AppState, AnalysisError } from '@/types';
 
+function getErrorMessage(payload: unknown, fallback: string) {
+  if (typeof payload === 'string') return payload;
+  if (!payload || typeof payload !== 'object') return fallback;
+
+  const error = 'error' in payload ? payload.error : undefined;
+  if (typeof error === 'string') return error;
+
+  const message = 'message' in payload ? payload.message : undefined;
+  if (typeof message === 'string') return message;
+
+  return fallback;
+}
+
 export function useAnalysis() {
   const [state, setState] = useState<AppState>('idle');
   const [result, setResult] = useState<AnalysisResult | null>(null);
@@ -24,10 +37,24 @@ export function useAnalysis() {
         body: JSON.stringify({ username: inputUsername, turnstileToken: turnstileToken ?? lastTurnstileToken.current }),
       });
 
-      const data = await res.json();
+      const data = await res.json().catch(() => null);
 
       if (!res.ok) {
-        throw new Error(data.error || 'Analysis failed');
+        if (res.status === 429) {
+          const retryAfter = res.headers.get('retry-after');
+          const waitMessage = retryAfter
+            ? `Please wait about ${retryAfter} seconds before trying again.`
+            : 'Please wait a few minutes before trying again.';
+
+          setError({
+            code: 'rate_limited',
+            message: `You are sending analyses too quickly. ${waitMessage}`,
+          });
+          setState('error');
+          return;
+        }
+
+        throw new Error(getErrorMessage(data, 'Analysis failed'));
       }
 
       setResult(data);
