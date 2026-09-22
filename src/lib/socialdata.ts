@@ -2,7 +2,7 @@ import axios from 'axios';
 import type { XUserProfile, XTweet } from '@/types';
 
 const API_BASE = 'https://api.socialdata.tools';
-const MAX_TWEETS = 50;
+const MAX_TWEETS = 100;
 const REQUEST_OPTIONS = {
   timeout: 10_000,
   maxRedirects: 0,
@@ -38,7 +38,7 @@ export async function fetchUserProfile(username: string): Promise<XUserProfile> 
 export async function fetchUserTweets(userId: string): Promise<XTweet[]> {
   const url = `${API_BASE}/twitter/user/${userId}/tweets`;
   try {
-    // Fetch only the pages needed for the 50 most recent tweets.
+    // Fetch only the pages needed for the 100 most recent tweets.
     let allTweets: XTweet[] = [];
     let cursor: string | undefined;
 

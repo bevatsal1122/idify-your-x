@@ -57,7 +57,7 @@ export async function analyzeProfile(
 
   // Mark highlights (they come first in the merged array)
   const tweetTexts = tweets
-    .slice(0, 50)
+    .slice(0, 100)
     .map((t, i) => {
       const isHighlight = i < highlightsCount;
       const prefix = isHighlight ? '[HIGHLIGHT] ' : '';
